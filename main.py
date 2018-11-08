@@ -3,8 +3,9 @@ from models.saloon import Saloon
 from peewee import IntegrityError
 from models.user import User
 from models.appointment import Appointment
+# import datetime
 from datetime import datetime
-app_start_config = {'debug': True, 'port': 8080, 'host': '0.0.0.0'}
+app_start_config = {'debug': True, 'port': 8000, 'host': '0.0.0.0'}
 app = Flask(__name__)
 import bootstrap
 bootstrap.initialize()
@@ -17,37 +18,38 @@ def index():
 
 @app.route('/user/register', methods=['POST'])
 def register_user():
-  user_data = dict(request.form.items())
-  result = {}
-  try:
-      User.create(
-          first_name=user_data.get('first_name'),
-          last_name=user_data.get('last_name'),
-          email=user_data.get('email')
-          )
-      result = {
-        'status': 'success',
-        'message':'{} is registered'.format(user_data.get('first_name'))}
-      return jsonify(result)
-  except IntegrityError:
-    result = {
-      'status':'failed',
-      'message':'{} is not unique'.format(user_data.get('email'))}
-  return jsonify(result)
+    user_data = dict(request.form.items())
+    result = {}
+    try:
+        User.create(
+            first_name=user_data.get('first_name'),
+            last_name=user_data.get('last_name'),
+            email=user_data.get('email')
+        )
+        result = {
+            'status': 'success',
+            'message': '{} registered'.format(user_data.get('first_name'))}
+        return jsonify(result)
+    except IntegrityError:
+        result = {
+            'status': 'failed',
+            'message': '{} is not unique'.format(user_data.get('email'))}
+        return jsonify(result)
+
 
 @app.route('/user')
 def list_users():
-  users = User.select()
-  results = []
-  for user in users:
-    results.append(
-      {
-        'first_name':user.first_name,
-        'last_name':user.last_name,
-        'email':user.email,
-      }
-    )
-  return jsonify(results)
+    users = User.select()
+    results = []
+    for user in users:
+        results.append(
+            {
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email
+            }
+        )
+    return jsonify(results)
 
 
 
@@ -55,10 +57,12 @@ def list_users():
 def make_appointment():
     appointment_data = dict(request.form.items())
     time_appointment_raw = appointment_data.get('time_appointment')
-    time_appointment_processed = datetime.strptime(time_appointment_raw ,"%d %b %Y %H:%M")
+    time_appointment_processed = datetime.strptime(time_appointment_raw ,"%m/%d/%Y %H:%M")
+
+    
     Appointment.create(
         user_id=appointment_data.get('user_id'),
-        saloon_id=appointment_data.get('saloon_id'),
+        salon_id=appointment_data.get('salon_id'),
         services=appointment_data.get('services'),
         time_appointment=time_appointment_processed
     )
@@ -78,7 +82,7 @@ def list_appointments():
             {
                 'user_id': appointment.user_id,
                 'time_appointment': appointment.time_appointment,
-                'saloon_id': appointment.saloon_id,
+                'salon_id': appointment.salon_id,
                 'services': appointment.services
             }
             )
